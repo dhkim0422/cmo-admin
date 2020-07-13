@@ -6,11 +6,14 @@ Insilicogen Web Framework
 
 #### 1. clone git repository 
 
-        git clone --bare https://gitlab.insilicogen.com/bs/iwf.git
-        cd iwf.git
-        git push --mirror https://gitlab.insilicogen.com/bs/new-project-name.git
+        //git을 클론 받기
+        git clone --bare https://github.com/dhkim0422/cmo-admin.git
+        cd cmo-admin
+        
+        //새로운 git 프로젝트생성 후 해당 프로젝트 명으로 변경 내역을 저장
+        git push --mirror https://github.com/dhkim0422/cmo-name.git
         cd ..
-        rm -rf iwf.git
+        rm -rf cmo-admin
 
 #### 2. clone local repository 
 Paste Repository Path or Url
