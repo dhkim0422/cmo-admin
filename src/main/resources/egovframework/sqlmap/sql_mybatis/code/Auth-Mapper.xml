@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.insilicogen.common.auth.mapper.AuthMapper">
+
+	<select id="selectAuthList" resultType="authVO">
+      SELECT a.AUTH_GROUP_SEQ
+            ,a.AUTH_GROUP_NM
+            ,a.AUTH_GROUP_DC
+            ,a.AUTH_CLASS_CD
+            ,(SELECT code.CODE_NM FROM t_com_code_i code WHERE code.group_cd = 'AUTHTY' AND code.code = a.AUTH_CLASS_CD ) as AUTH_CLASS_CD_NM
+            ,a.USE_AT
+            ,a.REGIST_ID
+            ,TO_CHAR(a.REGIST_DT, 'YYYY-MM-DD') AS REGIST_DT
+            ,a.UPDATE_ID
+            ,TO_CHAR(a.UPDATE_DT, 'YYYY-MM-DD') AS UPDATE_DT
+		FROM T_COM_AUTH_M a
+	</select>
+
+	<select id="selectAuth" parameterType="authVO" resultType="authVO">
+		SELECT 	AUTH_GROUP_SEQ AS authGroupSeq,
+				AUTH_GROUP_NM AS authGroupNm,
+				AUTH_GROUP_DC AS authGroupDc,
+				AUTH_CLASS_CD AS authClassCd,
+				USE_AT AS useAt,
+				REGIST_ID AS registId,
+				TO_CHAR(REGIST_DT, 'YYYY-MM-DD') AS registDt,
+				UPDATE_ID AS updateId,
+				TO_CHAR(UPDATE_DT, 'YYYY-MM-DD') AS updateDt
+		FROM T_COM_AUTH_M
+		WHERE AUTH_GROUP_SEQ = #{authGroupSeq}::int
+	</select>
+
+	<insert id="insertAuth" parameterType="authVO">
+		<selectKey keyProperty="authGroupSeq" resultType="string" order="BEFORE">
+	         SELECT NEXTVAL('t_com_auth_auth_group_seq_seq')
+	    </selectKey>
+		INSERT INTO T_COM_AUTH_M (
+			AUTH_GROUP_SEQ, AUTH_GROUP_NM, AUTH_GROUP_DC, AUTH_CLASS_CD, USE_AT, REGIST_ID, REGIST_DT, UPDATE_ID, UPDATE_DT
+		) VALUES (
+			#{authGroupSeq}::int, #{authGroupNm}, #{authGroupDc}, #{authClassCd}, #{useAt}, #{registId}, NOW(), #{registId}, NOW()
+		);
+	</insert>
+
+	<update id="updateAuth" parameterType="authVO">
+		UPDATE T_COM_AUTH_M SET
+			AUTH_GROUP_NM = #{authGroupNm},
+			AUTH_GROUP_DC = #{authGroupDc},
+			AUTH_CLASS_CD = #{authClassCd},
+			USE_AT = #{useAt},
+			UPDATE_ID = #{updateId},
+			UPDATE_DT = NOW()
+		WHERE AUTH_GROUP_SEQ = #{authGroupSeq}::int
+	</update>
+
+	<delete id="deleteAuth" parameterType="authVO">
+		DELETE FROM T_COM_AUTH_M
+		WHERE AUTH_GROUP_SEQ = #{authGroupSeq}::int
+	</delete>
+
+</mapper>

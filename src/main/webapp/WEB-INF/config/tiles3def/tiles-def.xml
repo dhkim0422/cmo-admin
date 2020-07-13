@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC  "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"  "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+
+	<!-- 레프트 메뉴 포함 -->
+	<definition name="adminStandardLayout"   template="/common/layouts/admin/standard.jsp">
+		<put-attribute name="top"   value="/common/layouts/top.jsp"   />
+		<put-attribute name="left"  value="/common/layouts/left.jsp"  />
+		<put-attribute name="content"  expression="${requestScope.body}" />
+		<put-attribute name="footer"	value="/common/layouts/footer.jsp" />
+	</definition>
+
+	<definition name="/adminStandardLayout/**" extends="adminStandardLayout">
+		<put-attribute name="content"	value="/WEB-INF/jsp/{1}.jsp" />
+	</definition>
+
+	<definition name="/spaStandardLayout/**" template="/common/layouts/admin/spaStandard.jsp">
+		<put-attribute name="content"	value="/WEB-INF/jsp/{1}.jsp" />
+	</definition>
+	
+	<definition name="/loginStandardLayout/**" template="/common/layouts/admin/loginStandard.jsp">
+        <put-attribute name="content"   value="/WEB-INF/jsp/{1}.jsp" />
+    </definition>
+
+</tiles-definitions>

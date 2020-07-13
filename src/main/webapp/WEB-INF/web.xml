@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+    version="3.1">
+
+  <!-- Display-name 설정 -->
+  <display-name>iwf</display-name>
+
+  <context-param>
+    <param-name>spring.profiles.active</param-name>
+    <param-value>local</param-value>
+  </context-param>
+
+  <!-- 필터 설정 -->
+  <filter>
+    <filter-name>encodingFilter</filter-name>
+    <filter-class>
+		org.springframework.web.filter.CharacterEncodingFilter
+	</filter-class>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>utf-8</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>encodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+ <!-- multipartFilter -->
+  <filter>
+    <filter-name>multipartFilter</filter-name>
+    <filter-class>org.springframework.web.multipart.support.MultipartFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>multipartFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+ <filter>
+    <filter-name>xssEscapeServletFilter</filter-name>
+    <filter-class>com.navercorp.lucy.security.xss.servletfilter.XssEscapeServletFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>xssEscapeServletFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!-- ApplicationContext 빈 설정 파일, 웹 어플리케이션이 시작되는 시점에 ApplicationContext을 로딩하며, 로딩된 빈정보는 모든 WebApplicationContext들이 참조할 수 있다.-->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>
+		classpath*:egovframework/spring/context-*.xml
+	</param-value>
+  </context-param>
+
+  <!-- 리스너 설정 -->
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+  <listener>
+      <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+  </listener>
+
+  <!-- DispathcherSerlvet 설정 -->
+  <servlet>
+    <servlet-name>dispatcher</servlet-name>
+    <servlet-class>
+		org.springframework.web.servlet.DispatcherServlet
+	</servlet-class>
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>
+		/WEB-INF/config/springmvc/dispatcher-servlet.xml
+	  </param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>dispatcher</servlet-name>
+    <url-pattern>*.do</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>dispatcher</servlet-name>
+    <url-pattern>*.json</url-pattern>
+  </servlet-mapping>
+
+  <!-- Welcome File 설정 -->
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+
+  <!-- <filter-mapping> 요소에서의 'springSecurityFilterChain'은 'org.springframework.web.filter.DelegatingFilterProxy'에 붙인 필터 이름이다.
+  DelegatingFilterProxy 클래스는 스프링이 제공하는 필터이고, 실제 처리를 필터 이름에 일치하는 이름의 Bean에 위임한다.
+   스프링 시큐리티는 'springSecurityFilterChain'이라는 이름으로 스프링에 Bean을 등록하기 때문에 이렇게 필터를 정의하면 스프링 시큐리티 기능이 유효해 진다.
+   또한 애플리케이션의 모든 URL에 대해 이 필터 체인을 유효하게 하고, 스프링 시큐리티를 작동시킨다.-->
+<!--   <filter> -->
+<!--   	<filter-name>springSecurityFilterChain</filter-name> -->
+<!--   	<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class> -->
+<!--   </filter>	 -->
+<!--   <filter-mapping> -->
+<!--   	<filter-name>springSecurityFilterChain</filter-name> -->
+<!--   	<url-pattern>/*</url-pattern> -->
+<!--   </filter-mapping> -->
+
+  <!-- 이중 로그인을 막기 위한 리스너 클래스이다.-->
+<!--   <listener> -->
+<!--   	<listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class> -->
+<!--   </listener> -->
+
+  <!-- error 페이지 설정 -->
+<!--   <error-page> -->
+<!--   	<error-code>403</error-code> -->
+<!--   	<location>/WEB-INF/jsp/noAuthority.jsp</location> -->
+<!--   </error-page> -->
+
+</web-app>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<settings>
+		<setting name="callSettersOnNulls" value="true"/>	<!-- value가 null이라도 필드를 생성 해줌 -->
+		<setting name="lazyLoadingEnabled" value="true" />
+		<setting name="cacheEnabled" value="false" />
+		<setting name="multipleResultSetsEnabled" value="true" />
+		<setting name="useColumnLabel" value="true" />
+		<setting name="useGeneratedKeys" value="false" />
+<!-- 		<setting name="defaultExecutorType" value="BATCH" /> -->
+		<setting name="defaultStatementTimeout" value="120" />
+		<setting name="safeRowBoundsEnabled" value="false" />
+		<setting name="mapUnderscoreToCamelCase" value="true" /><!-- vo to camel  -->
+		<setting name="localCacheScope" value="SESSION" />
+		<setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString" />
+		<setting name="jdbcTypeForNull" value="NULL" />
+	</settings>
+ 	<typeAliases>
+		<typeAlias alias="hashmap" type="java.util.HashMap"/>
+		<typeAlias alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+<!-- 		<typeAlias alias="genericMap" type="com.insilicogen.common.util.GenericMap"/> -->
+		<typeAlias alias="boardVO" type="com.insilicogen.common.board.service.BoardVO"/>
+		<typeAlias alias="jFileVO" type="com.insilicogen.common.jfile.service.JFileVO"/>
+		<typeAlias alias="jFileDetails" type="com.insilicogen.common.jfile.service.JFileDetails"/>
+
+		<typeAlias  alias="codeVO" type="com.insilicogen.common.code.service.CodeVO"/>
+		<typeAlias  alias="groupCodeVO" type="com.insilicogen.common.code.service.GroupCodeVO"/>
+		<typeAlias  alias="menuVO" type="com.insilicogen.common.menu.service.MenuVO"/>
+		<typeAlias  alias="userVO" type="com.insilicogen.common.user.service.UserVO"/>
+		<typeAlias  alias="pageVO" type="com.insilicogen.common.page.service.PageVO"/>
+		<typeAlias  alias="authVO" type="com.insilicogen.common.auth.service.AuthVO"/>
+		<typeAlias  alias="instVO" type="com.insilicogen.common.inst.service.InstVO"/>
+		<typeAlias  alias="logVO" type="com.insilicogen.common.log.service.LogVO"/>
+<!-- 		<typeAlias  alias="frtVO" type="com.insilicogen.common.frt.service.FrtVO"/> -->
+	</typeAliases>
+
+	<typeHandlers>
+		<typeHandler javaType="java.lang.String" jdbcType="CLOB" handler="org.apache.ibatis.type.ClobTypeHandler"></typeHandler>
+	</typeHandlers>
+
+</configuration>

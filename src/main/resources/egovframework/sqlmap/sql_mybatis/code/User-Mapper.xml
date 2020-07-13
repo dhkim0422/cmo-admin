@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.insilicogen.common.user.mapper.UserMapper">
+
+    <select id="selectUserListExcel" resultType="egovMap">
+      SELECT a.USER_ID
+            ,a.USER_NM
+            ,a.EMAIL_ADDR
+            ,a.ADRES
+            ,a.DETAIL_ADRES
+            ,a.POST_NO
+            ,a.USE_AT
+            ,COALESCE(a.LOGIN_TRY_CNT, '0')  as LOGIN_TRY_CNT
+            ,TO_CHAR(a.REGIST_DT, 'YYYY-MM-DD') AS REGIST_DT
+            ,a.AUTH_GROUP_SEQ
+            ,b.AUTH_GROUP_NM
+            ,a.USER_STATUS
+            ,(SELECT code.CODE_NM FROM t_com_code_i code WHERE code.group_cd = 'USER_STATUS' AND code.code = a.USER_STATUS ) as USER_STATUS_NM
+        FROM T_COM_USER_M a
+         LEFT OUTER JOIN T_COM_AUTH_M b
+          ON a.AUTH_GROUP_SEQ = b.AUTH_GROUP_SEQ
+       WHERE 1 = 1
+        <if test="@com.insilicogen.common.util.AppUtil@isNotEmpty(filterByClause)">
+          AND ${filterByClause}
+        </if>
+          ${orderByClause}
+    </select>
+
+    <select id="selectUserList" resultType="userVO" >
+      SELECT a.USER_ID                          AS userId
+            ,a.USER_NM                          AS userNm
+            ,a.EMAIL_ADDR                       AS emailAddr
+            ,a.ADRES                            AS adres
+            ,a.DETAIL_ADRES                     AS detailAdres
+            ,a.POST_NO                          AS postNo
+            ,TO_CHAR(a.REGIST_DT, 'YYYY-MM-DD') AS registDt
+            ,COALESCE(a.LOGIN_TRY_CNT, '0')     AS loginTryCnt
+            ,a.INST_ID                          AS instId        /*소속기관*/
+            ,a.AUTH_GROUP_SEQ                   AS authGroupSeq  /*권한*/
+            ,b.AUTH_GROUP_NM                    AS authGroupNm
+            ,a.USER_STATUS                      AS userStatus
+            ,(SELECT code.CODE_NM FROM t_com_code_i code WHERE code.group_cd = 'USER_STATUS' AND code.code = a.USER_STATUS ) as userStatusNm
+        FROM T_COM_USER_M a
+        LEFT OUTER JOIN T_COM_AUTH_M b
+          ON a.AUTH_GROUP_SEQ = b.AUTH_GROUP_SEQ
+       WHERE 1 = 1
+        <if test="@com.insilicogen.common.util.AppUtil@isNotEmpty(filterByClause)">
+         AND ${filterByClause}
+        </if>
+         ${orderByClause}
+       LIMIT #{length} OFFSET #{start}
+    </select>
+
+    <select id="selectUserListTotCnt" resultType="Integer">
+       SELECT COUNT(1)
+         FROM T_COM_USER_M a
+         LEFT OUTER JOIN T_COM_AUTH_M b
+          ON a.AUTH_GROUP_SEQ = b.AUTH_GROUP_SEQ
+        WHERE 1 = 1
+         <if test="@com.insilicogen.common.util.AppUtil@isNotEmpty(filterByClause)">
+          AND ${filterByClause}
+         </if>
+    </select>
+
+    <select id="selectUser" parameterType="userVO" resultType="userVO">
+        SELECT a.USER_ID                          AS userId
+              ,a.USER_NM                          AS userNm
+              ,a.PASSWD                           AS passwd
+              ,a.EMAIL_ADDR                       AS emailAddr
+              ,a.ADRES                            AS adres
+              ,a.DETAIL_ADRES                     AS detailAdres
+              ,a.POST_NO                          AS postNo
+              ,a.REGIST_ID                        AS registId
+              ,TO_CHAR(a.REGIST_DT, 'YYYY-MM-DD') AS registDt
+              ,COALESCE(a.LOGIN_TRY_CNT, '0')     AS loginTryCnt
+              ,a.INST_ID                          AS instId
+              ,a.AUTH_GROUP_SEQ                   AS authGroupSeq
+              ,a.USER_STATUS                      AS userStatus
+          FROM T_COM_USER_M a
+         WHERE USER_ID = #{userId}
+    </select>
+    
+    <select id="selectUserIdCnt" parameterType="userVO" resultType="Integer">
+       SELECT COUNT(1)
+         FROM T_COM_USER_M a
+        WHERE a.USER_ID = #{userId}
+    </select>
+    
+    <update id="insertUser" parameterType="userVO">
+        INSERT INTO T_COM_USER_M
+        (
+            USER_ID
+           ,USER_NM
+           ,PASSWD
+           ,EMAIL_ADDR
+           ,ADRES
+           ,DETAIL_ADRES
+           ,POST_NO
+           
+           ,REGIST_ID
+           ,REGIST_DT
+           ,UPDATE_ID
+           ,UPDATE_DT
+           ,INST_ID
+           ,AUTH_GROUP_SEQ
+           ,USER_STATUS
+        )
+        VALUES
+        (
+            #{userId}
+           ,#{userNm}
+           ,#{passwd}
+           ,#{emailAddr}
+           ,#{adres}
+           ,#{detailAdres}
+           ,#{postNo}
+
+           ,#{registId}
+           ,NOW()
+           ,#{registId}
+           ,NOW()
+           ,#{instId}
+           ,#{authGroupSeq}
+           ,#{userStatus}
+        )
+    </update>
+
+    <update id="updateUser" parameterType="userVO">
+     UPDATE T_COM_USER_M
+        SET USER_NM        = #{userNm}
+           ,EMAIL_ADDR     = #{emailAddr}
+           ,ADRES          = #{adres}
+           ,DETAIL_ADRES   = #{detailAdres}
+           ,POST_NO        = #{postNo}
+           
+           ,UPDATE_DT      = NOW()
+           ,UPDATE_ID      = #{updateId}
+           ,INST_ID        = #{instId}
+           ,AUTH_GROUP_SEQ = #{authGroupSeq}
+           ,USER_STATUS    = #{userStatus}
+      WHERE USER_ID        = #{userId}
+    </update>
+
+    <delete id="deleteUser" parameterType="userVO">
+        DELETE FROM T_COM_USER_M
+         WHERE USER_ID = #{userId}
+    </delete>
+
+    <update id="updateLoginTryCnt" parameterType="userVO">
+        UPDATE T_COM_USER_M
+           SET LOGIN_TRY_CNT = #{loginTryCnt}
+              ,UPDATE_DT     = NOW()
+         WHERE USER_ID       = #{userId}
+    </update>
+    
+    <update id="updatePasswordReset" parameterType="userVO">
+        UPDATE T_COM_USER_M
+           SET PASSWD        = #{passwd}
+              ,LOGIN_TRY_CNT = 0
+              ,UPDATE_DT     = NOW()
+              ,UPDATE_ID     = #{updateId}
+         WHERE USER_ID       = #{userId}
+    </update>
+</mapper>

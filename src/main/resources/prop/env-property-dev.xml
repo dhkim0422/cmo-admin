@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="APP_ENCRYPTION_PASSWORD" >incodsc</entry>
+    <entry key="nologin.auth.seq" >1</entry>
+</properties>

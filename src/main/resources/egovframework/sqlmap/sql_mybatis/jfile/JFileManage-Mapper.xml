@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.insilicogen.common.jfile.mapper.JFileMapper">
+
+	<insert id="addAttachFile" parameterType="jFileDetails" flushCache="true">
+		<selectKey keyProperty="fileSeq" resultType="int" order="BEFORE">
+			SELECT NEXTVAL('t_com_attch_file_file_seq_seq')
+	    </selectKey>
+		INSERT
+		  INTO T_COM_ATTCH_FILE_M
+		      (
+			   FILE_ID,
+			   FILE_SEQ,
+			   FILE_NM,
+			   FILE_SIZE,
+			   FILE_MASK,
+			   DWLD_CNT,
+			   DWLD_LIMIT_CNT,
+			   REGIST_DT,
+			   REGIST_ID
+			  )
+			   VALUES
+			  (
+			   #{fileId},
+			   #{fileSeq}::integer,
+			   #{fileNm},
+			   #{fileSize} ,
+			   #{fileMask} ,
+			   #{dwldCnt} ,
+			   #{dwldLimitCnt},
+			   now(),
+			   #{registId}
+			  )
+	</insert>
+
+	<update id="updateAttachFileDeleteYnByFileId" parameterType="java.util.Map">
+		UPDATE T_COM_ATTCH_FILE_M
+		   SET DEL_YN = #{delYn}
+		 WHERE FILE_ID   = #{fileId}
+	</update>
+
+	<update id="updateAttachFileDeleteYn" parameterType="java.util.Map">
+		UPDATE T_COM_ATTCH_FILE_M
+		   SET DEL_YN = #{delYn}
+		 WHERE FILE_ID  = #{fileId}
+		 AND FILE_SEQ IN
+        <foreach item="item" index="index" collection="fileSeqs" open="(" close=")" separator=",">
+	            #{item}
+	    </foreach>
+	</update>
+
+	<update id="updateAttachFileDwldCnt" parameterType="java.util.Map">
+		UPDATE T_COM_ATTCH_FILE_M
+           SET DWLD_CNT = DWLD_CNT + 1
+           WHERE 1=1
+        <if test="fileId != null and fileId != ''">
+         AND FILE_ID  = #{fileId}
+          </if>
+          <if test="fileSeq != null and fileSeq != ''">
+		 AND FILE_SEQ = #{fileSeq}::integer
+		  </if>
+	</update>
+
+	<update id="updateAttachFileDwldCntBySequence" parameterType="jFileVO">
+		UPDATE T_COM_ATTCH_FILE_M
+           SET DWLD_CNT = DWLD_CNT + 1
+         WHERE FILE_ID        = #{fileId}
+           AND FILE_SEQ       = #{fileSeq}::integer
+	</update>
+
+	<update id="updateAttachFileReprsntAllN" parameterType="jFileVO">
+		UPDATE T_COM_ATTCH_FILE_M
+           SET  REPRSNT_AT = 'N'
+         WHERE FILE_ID        = #{fileId}
+	</update>
+	<update id="updateAttachFileReprsntY" parameterType="jFileVO">
+		UPDATE T_COM_ATTCH_FILE_M
+           SET  REPRSNT_AT = 'Y'
+         WHERE FILE_ID        = #{fileId}
+           AND FILE_SEQ       = #{fileSeq}::integer
+	</update>
+
+
+	<update id="updateAttachFileDwldCntByFileId" parameterType="string">
+		UPDATE T_COM_ATTCH_FILE_M
+           SET DWLD_CNT = DWLD_CNT + 1
+         WHERE FILE_ID = #{value}
+	</update>
+
+	<delete id="removeAttachFile" parameterType="java.util.Map">
+		 DELETE
+         FROM T_COM_ATTCH_FILE_M
+         WHERE FILE_ID  = #{fileId}
+	</delete>
+
+	 <delete id="removeAttachFileInfo" parameterType="com.insilicogen.common.jfile.service.JFileVO">
+	  		 DELETE
+	         FROM T_COM_ATTCH_FILE_M
+	         WHERE FILE_ID  = #{fileId}
+	         AND FILE_SEQ  = #{fileSeq}::integer
+	 </delete>
+
+
+	<select id="selectAttachFiles" parameterType="jFileVO" resultType="jFileVO">
+		SELECT FILE_ID               as fileId,
+			   FILE_SEQ              as fileSeq,
+			   FILE_SEQ              as key,
+			   FILE_NM	             as fileNm,
+			   FILE_NM	             as caption,
+		       FILE_SIZE             as fileSize,
+		       FILE_SIZE             as size,
+		       FILE_MASK             as fileMask,
+		       DWLD_CNT        		 as dwldCnt,
+			   ( TO_CHAR(REGIST_DT,'yyyyMM')||'/' ||TO_CHAR(REGIST_DT,'dd')||'/'||file_mask ) AS filePath,
+		       DWLD_LIMIT_CNT  		 as dwldLimitCnt,
+		       REGIST_DT             as registDt,
+		       REPRSNT_AT		     as reprsntAt
+		  FROM T_COM_ATTCH_FILE_M
+		  WHERE 1=1
+		  	<if test="fileId != null and fileId != ''">
+		     AND  FILE_ID  = #{fileId}
+		  	</if>
+		  	<if test="fileId == null or fileId == ''">
+		     AND  FILE_ID  is  null
+		  	</if>
+		  	<if test="fileSeq != null and fileSeq != ''">
+		      AND FILE_SEQ = #{fileSeq}::integer
+		  	</if>
+		  	<if test="fileIdArr != null and fileIdArr != ''">
+			AND FILE_ID IN
+			 <foreach item="item" index="index" collection="fileIdArr" open="(" close=")" separator=",">
+		            #{item}
+		    </foreach>
+			</if>
+			<if test="fileSeqArr != null and fileSeqArr != ''">
+				AND FILE_SEQ IN
+				 <foreach item="item" index="index" collection="fileSeqArr" open="(" close=")" separator=",">
+			            #{item}
+			    </foreach>
+			</if>
+	</select>
+	<select id="selectAttachFile" parameterType="jFileVO" resultType="jFileVO">
+		SELECT FILE_ID               as fileId,
+			   FILE_SEQ              as fileSeq,
+			   FILE_NM             as fileNm,
+		       FILE_SIZE             as fileSize,
+		       FILE_MASK             as fileMask,
+		       DWLD_CNT        		 as dwldCnt,
+
+		       DWLD_LIMIT_CNT  		 as dwldLimitCnt,
+		       REGIST_DT              as registDt,
+		       REPRSNT_AT			as reprsntAt
+		  FROM T_COM_ATTCH_FILE_M
+		  WHERE 1=1
+		  	<if test="fileId != null and fileId != ''">
+		     AND  FILE_ID  = #{fileId}
+		  	</if>
+		  	<if test="fileSeq != null and fileSeq != ''">
+		      AND FILE_SEQ = #{fileSeq}::integer
+		  	</if>
+		  	<if test="fileIdArr != null and fileIdArr != ''">
+			AND FILE_ID IN
+			 <foreach item="item" index="index" collection="fileIdArr" open="(" close=")" separator=",">
+		            #{item}
+		    </foreach>
+			</if>
+			<if test="fileSeqArr != null and fileSeqArr != ''">
+				AND FILE_SEQ IN
+				 <foreach item="item" index="index" collection="fileSeqArr" open="(" close=")" separator=",">
+			            #{item}
+			    </foreach>
+			</if>
+			ORDER BY 	FILE_ID
+				       ,REPRSNT_AT DESC
+				       ,file_seq
+			LIMIT    1
+	</select>
+
+	<select id="getAttachFileSeqs" parameterType="string" resultType="int">
+		SELECT FILE_SEQ
+		  FROM T_COM_ATTCH_FILE_M
+		 WHERE FILE_ID = #{value}
+	</select>
+
+	<select id="getPresentAttachFileSeqs" parameterType="string" resultType="string">
+		SELECT FILE_SEQ
+		  FROM T_COM_ATTCH_FILE_M
+		 WHERE FILE_ID = #{value}
+		   AND DEL_YN = 'N'
+	</select>
+
+	<select id="isExistingAttachFileInfo" parameterType="java.util.Map" resultType="string">
+		SELECT FILE_ID
+		  FROM T_COM_ATTCH_FILE_M
+		 WHERE FILE_ID  = #{fileId}
+		 AND
+		  <foreach item="item" index="index" collection="fileSeqs" open="(" close=")" separator=",">
+	            #{item}
+	    </foreach>
+	</select>
+
+
+</mapper>

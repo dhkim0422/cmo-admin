@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.insilicogen.common.menu.mapper.MenuMapper">
+
+	<select id="selectMenuList" resultType="egovMap">
+		WITH RECURSIVE T ( MENU_SEQ, COL_ORD, MENU_NM, UPPER_MENU_SEQ, USE_AT, PARAM, PAGE_SEQ, LEVEL, PATH, CYCLE, MENU_ICON ) as (
+			SELECT	A.MENU_SEQ,
+					A.COL_ORD,
+					A.MENU_NM,
+					A.UPPER_MENU_SEQ,
+					A.USE_AT,
+					A.PARAM,
+					A.PAGE_SEQ,
+					0,
+					ARRAY[A.COL_ORD],
+					FALSE,
+					A.MENU_ICON
+			FROM T_COM_MENU_M A
+			WHERE A.UPPER_MENU_SEQ = 0
+
+			UNION ALL
+
+			SELECT	A.MENU_SEQ,
+					A.COL_ORD,
+					A.MENU_NM,
+					A.UPPER_MENU_SEQ,
+					A.USE_AT,
+					A.PARAM,
+					A.PAGE_SEQ,
+					LEVEL+1,
+					PATH||A.COL_ORD,
+					A.COL_ORD = ANY(PATH),
+					A.MENU_ICON
+			FROM T_COM_MENU_M A, T
+			WHERE 1=1
+			AND A.UPPER_MENU_SEQ > 0
+			AND A.UPPER_MENU_SEQ = T.MENU_SEQ
+		)
+		SELECT	T.MENU_SEQ,
+				T.COL_ORD,
+				COALESCE(B.MENU_NM, T.MENU_NM) AS MENU_NM,
+				T.UPPER_MENU_SEQ,
+				AA.URL,
+				NULL,
+				T.USE_AT,
+				T.PARAM,
+				T.PAGE_SEQ
+				<choose>
+					<when test="authGroupSeq != null and authGroupSeq != ''">
+						, (SELECT  CASE COUNT(1)
+			                       	WHEN  0 THEN  0
+			                       	ELSE 1
+			                       	END
+			                 FROM T_COM_MENU_AUTH_I TMA
+			                 WHERE TMA.MENU_SEQ = T.MENU_SEQ
+			                 AND TMA.AUTH_GROUP_SEQ =COALESCE(#{authGroupSeq}::int,6)
+			              )  AS MENU_AUTH_CNT
+					</when>
+					<otherwise>
+						,'0' AS MENU_AUTH_CNT
+					</otherwise>
+				</choose>
+				, T.MENU_ICON
+		FROM T LEFT OUTER JOIN T_COM_PAGE_M AA ON (T.PAGE_SEQ = AA.PAGE_SEQ) LEFT OUTER JOIN (SELECT D.MENU_SEQ, D.MENU_NM FROM T_COM_MENU_M D ) B ON (T.MENU_SEQ=B.MENU_SEQ)
+				<if test="authGroupSeq != null and authGroupSeq != ''">
+					LEFT OUTER JOIN (SELECT MENU_SEQ FROM T_COM_MENU_AUTH_I WHERE AUTH_GROUP_SEQ= 6) D ON (T.MENU_SEQ = D.MENU_SEQ )
+				</if>
+		WHERE 1=1
+		AND t.MENU_SEQ>0
+		ORDER BY PATH
+	</select>
+
+	<select id="getSelectMenuPageList" parameterType="menuVO" resultType="egovMap">
+		SELECT  A.PAGE_SEQ,
+				A.PAGE_NM,
+				A.URL,
+				B.MENU_SEQ,
+				B.REGIST_ID,
+				TO_CHAR(B.REGIST_DT,'YYYY-MM-DD') REGIST_DT,
+				B.UPDATE_ID,
+				TO_CHAR(B.UPDATE_DT,'YYYY-MM-DD') UPDATE_DT
+		FROM T_COM_PAGE_M A, T_COM_MENU_PAGE_I B
+		WHERE A.PAGE_SEQ=B.PAGE_SEQ
+		<if test="menuSeq != null and menuSeq != ''">
+		AND	B.MENU_SEQ = #{menuSeq}::integer
+		</if>
+	</select>
+
+	<update id="saveMenu">
+		INSERT INTO T_COM_MENU_M (
+			MENU_SEQ,
+			UPPER_MENU_SEQ,
+			MENU_NM,
+			MENU_NM_EN,
+			PARAM,
+			PAGE_SEQ,
+			COL_ORD,
+			USE_AT,
+			REGIST_DT,
+			REGIST_ID,
+			UPDATE_DT,
+			UPDATE_ID,
+			MENU_ICON
+		) VALUES (
+			<choose>
+				<when test="menuSeq != null and menuSeq != ''">#{menuSeq}::int,</when>
+				<otherwise>NEXTVAL('t_com_menu_menu_seq_seq')::int,</otherwise>
+			</choose>
+			#{upperMenuSeq}::int,
+			#{menuNm},
+			#{menuNmEn},
+			#{param},
+			#{pageSeq}::int,
+			#{colOrd}::int,
+			#{useAt},
+			NOW(),
+			#{registId},
+			NOW(),
+			#{registId},
+			#{menuIcon}
+		) ON CONFLICT (MENU_SEQ) DO
+		UPDATE SET
+			UPPER_MENU_SEQ = #{upperMenuSeq}::int,
+			MENU_NM = #{menuNm},
+			MENU_NM_EN = #{menuNmEn},
+			PARAM = #{param},
+			PAGE_SEQ = #{pageSeq}::int,
+			COL_ORD = #{colOrd}::int,
+			USE_AT = #{useAt},
+			UPDATE_DT = NOW(),
+			UPDATE_ID = #{updateId},
+			MENU_ICON = #{menuIcon}
+	</update>
+
+	<update id="updateMenuPage">
+		UPDATE T_COM_MENU_M SET
+			UPPER_MENU_SEQ = #{upperMenuSeq}::int
+		<if test="colOrd != null and colOrd != ''">
+			, COL_ORD = #{colOrd}
+		</if>
+		WHERE MENU_SEQ = #{menuSeq}::int
+	</update>
+
+	<update id="updateMenuAuth" parameterType="java.util.List">
+		INSERT INTO T_COM_MENU_AUTH_I(
+			AUTH_GROUP_SEQ, MENU_SEQ, REGIST_DT, REGIST_ID
+		) VALUES
+		<foreach collection="list" item="item" separator=" , " >
+			(#{item.authGroupSeq}::int, #{item.menuSeq}::int, NOW(), #{item.registId})
+		</foreach>
+	</update>
+
+	<update id="insertMenuPage">
+		INSERT INTO T_COM_MENU_PAGE_I (
+			MENU_SEQ,
+			PAGE_SEQ,
+			REGIST_DT,
+			REGIST_ID,
+			UPDATE_DT,
+			UPDATE_ID
+		)
+		VALUES (
+			#{menuSeq}::int,
+			#{pageSeq}::int,
+            NOW(),
+            #{registId},
+            NOW(),
+            #{registId}
+		)
+	</update>
+
+	<delete id="deleteMenuPage" parameterType="menuVO">
+		DELETE FROM T_COM_MENU_PAGE_I
+		WHERE MENU_SEQ = #{menuSeq}::int
+		AND PAGE_SEQ = #{pageSeq}::int
+	</delete>
+
+	<delete id="deleteMenuAuth" parameterType="string">
+		DELETE FROM T_COM_MENU_AUTH_I
+		WHERE AUTH_GROUP_SEQ = #{authGroupSeq}::int
+	</delete>
+
+	<delete id="deleteMenu" parameterType="menuVO">
+		DELETE FROM T_COM_MENU_M
+		WHERE MENU_SEQ = #{menuSeq}::int
+	</delete>
+
+	<select id="selectMyMenuList" parameterType="map" resultType="egovMap">
+	WITH RECURSIVE T ( MENU_SEQ, COL_ORD, MENU_NM, UPPER_MENU_SEQ, USE_AT, PARAM, PAGE_SEQ, LEVEL, PATH, HIST_MENU_SEQ, CYCLE, MENU_ICON ) AS (
+		       SELECT A.MENU_SEQ
+		            , A.COL_ORD
+		            , A.MENU_NM
+		            , A.UPPER_MENU_SEQ
+		            , A.USE_AT
+		            , A.PARAM
+		            , A.PAGE_SEQ
+		            , 0
+		            , ARRAY[A.COL_ORD]
+		            , ARRAY[A.MENU_SEQ]
+		            , FALSE
+		            , A.MENU_ICON
+		        FROM T_COM_MENU_M A
+		       WHERE A.UPPER_MENU_SEQ=0
+		       UNION ALL
+		       SELECT A.MENU_SEQ
+		            , A.COL_ORD
+		            , A.MENU_NM
+		            , A.UPPER_MENU_SEQ
+		            , A.USE_AT
+		            , A.PARAM
+		            , A.PAGE_SEQ
+		            , LEVEL+1
+		            , PATH||A.COL_ORD
+		            , HIST_MENU_SEQ || A.MENU_SEQ
+		            , A.COL_ORD=ANY(PATH)
+		            , A.MENU_ICON
+		        FROM  T_COM_MENU_M A
+		            , T
+		        WHERE A.UPPER_MENU_SEQ > 0
+		          AND A.UPPER_MENU_SEQ = T.MENU_SEQ
+		       )
+		SELECT T.MENU_SEQ
+		     , T.COL_ORD
+		     , COALESCE(B.MENU_NM, T.MENU_NM) AS MENU_NM
+		     , T.UPPER_MENU_SEQ
+		     , AA.URL
+		     , T.LEVEL
+		     , T.USE_AT
+		     , T.PARAM
+		     , T.PAGE_SEQ
+		     , (SELECT COUNT(1)
+		          FROM T_COM_MENU_M TMA
+		         WHERE TMA.UPPER_MENU_SEQ=T.MENU_SEQ
+		       ) AS CHILD_CNT
+		     , (SELECT TMA.MENU_NM
+		          FROM T_COM_MENU_M TMA
+		         WHERE TMA.MENU_SEQ=T.UPPER_MENU_SEQ
+		       ) AS UP_MENU_NM
+		     , T.HIST_MENU_SEQ
+		     , T.MENU_ICON
+		 FROM T
+		   LEFT OUTER JOIN T_COM_PAGE_M AA
+		       ON T.PAGE_SEQ=AA.PAGE_SEQ
+
+		   LEFT OUTER JOIN T_COM_MENU_M B
+		       ON T.MENU_SEQ=B.MENU_SEQ
+
+		   /*    LEFT OUTER JOIN (SELECT MENU_SEQ FROM T_COM_MENU_AUTH_I WHERE AUTH_GROUP_SEQ= 6) D ON (T.MENU_SEQ = D.MENU_SEQ ) */
+		 <![CDATA[
+         WHERE t.MENU_SEQ > 0
+		   AND 0 < (SELECT COUNT(1)
+		              FROM T_COM_MENU_AUTH_I TMA
+		             WHERE TMA.MENU_SEQ=T.MENU_SEQ
+		               AND TMA.AUTH_GROUP_SEQ IN ( #{myAuthGroupSeq}::int , #{noLoginAuthSeq}::int )
+		           )
+		 ]]>
+		ORDER BY PATH
+	</select>
+
+	<select id="selectMyMenuPageUrlList" parameterType="map" resultType="egovMap">
+	 <![CDATA[
+	SELECT mp.URL
+	      ,COALESCE(mp.BTN_ID, '') BTN_ID
+	      ,a.MENU_SEQ
+	  FROM T_COM_MENU_M a
+	      ,T_COM_PAGE_M mp
+	 WHERE a.page_seq = mp.page_seq
+       AND 0 < (SELECT COUNT(1)
+                  FROM T_COM_MENU_AUTH_I TMA
+                 WHERE TMA.MENU_SEQ = a.MENU_SEQ
+                   AND TMA.AUTH_GROUP_SEQ IN ( #{myAuthGroupSeq}::int , #{noLoginAuthSeq}::int )
+                )
+
+UNION ALL
+	SELECT sp.URL
+	      ,COALESCE(sp.BTN_ID, '') BTN_ID
+	      ,a.MENU_SEQ
+	  FROM T_COM_MENU_M a
+	      ,T_COM_MENU_PAGE_I b
+	      ,T_COM_PAGE_M sp
+	WHERE a.MENU_SEQ = b.MENU_SEQ
+      AND b.PAGE_SEQ = sp.PAGE_SEQ
+      AND 0 < (SELECT COUNT(1)
+                 FROM T_COM_MENU_AUTH_I TMA
+                WHERE TMA.MENU_SEQ = a.MENU_SEQ
+                  AND TMA.AUTH_GROUP_SEQ IN ( #{myAuthGroupSeq}::int , #{noLoginAuthSeq}::int )
+               )
+	]]>
+	</select>
+
+</mapper>

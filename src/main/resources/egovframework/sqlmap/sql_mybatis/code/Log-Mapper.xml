@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.insilicogen.common.log.mapper.LogMapper">
+
+	<insert id="insertLog" parameterType="logVO">
+		<selectKey keyProperty="logId" resultType="string" order="BEFORE">
+	         SELECT NEXTVAL('t_com_log_log_id_seq')::character varying
+	    </selectKey>
+	    INSERT INTO T_COM_LOG_L
+	    (
+	    	LOG_ID, URL, REGIST_IP, CLASS_NM, METHOD_NM, PROCESS_TIME, REGIST_ID, REGIST_DT, PAGE_SEQ
+	    )
+	    VALUES
+	    (
+	    	#{logId},
+			#{url},
+			#{registIp},
+			#{classNm},
+			#{methodNm},
+			#{processTime},
+			#{registId},
+			NOW(),
+			(SELECT PAGE_SEQ FROM T_COM_PAGE_M WHERE URL = #{url})
+	    )
+	</insert>
+
+</mapper>

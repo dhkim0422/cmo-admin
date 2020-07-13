@@ -1,0 +1,104 @@
+/****************************************
+ *       Common						    *
+ ****************************************/
+.required:after {
+    content: "*";
+    color: #e56e67;
+}
+label {
+	font-weight: 600;
+}
+.custom-table label{
+    margin-bottom: 0rem;
+}
+.custom-table td{
+	padding: 5px;
+}
+/****************************************
+ *       Admin						    *
+ ****************************************/
+.sidebar-nav #sidebarnav .nav-small-cap {
+	font-size: 15px;
+	font-weight: 600;
+}
+.ztree * {
+	font-family: "Noto Sans Korean" !important;
+	font-size: 16px !important;
+}
+.col-form-label {
+	font-weight: 600;
+}
+select.custom-select {
+    color: black !important;
+}
+
+/****************************************
+ *       Sweet Alert				    *
+ ****************************************/
+.sweet-alert h2{
+	font-family: "Noto Sans Korean", sans-serif !important;
+}
+.swal2-title {
+	color: #fff !important;
+}
+.swal2-icon, .swal2-icon-content{
+	color: #fff !important;
+	border-color: #fff !important;
+}
+.btn-white{
+/* 	background-color: "#fff"; */
+	border-color: #fff !important;
+	color: #fff !important;
+}
+.btn-white:hover{
+/* 	background-color: "#fff"; */
+    color: #5f76e8 !important;
+    background-color: #fff !important;
+    border-color: #fff !important;
+}
+
+/****************************************
+ *       Toastr						    *
+ ****************************************/
+.toast-success{
+	background-color: #5f76e8 !important;
+}
+
+/****************************************
+ *       DataTable					    *
+ ****************************************/
+#dataTable tbody tr td{
+	padding: 0.6rem;
+}
+.dataTables_filter label, .dataTables_filter input{
+	font-weight: 600 !important;
+	width: 100% !important;
+}
+.dataTables_length label, .dataTables_length select{
+	font-weight: 600 !important;
+}
+
+table.dataTable.order-column tbody>tr.selected>.sorting_1, table.dataTable.order-column tbody>tr.selected>.sorting_2,
+table.dataTable.order-column tbody>tr.selected>.sorting_3, table.dataTable.order-column tbody>tr>.selected,
+table.dataTable.display tbody>tr.selected>.sorting_1, table.dataTable.display tbody>tr.selected>.sorting_2,
+table.dataTable.display tbody>tr.selected>.sorting_3, table.dataTable.display tbody>tr>.selected{
+	background-color: inherit !important;
+}
+table.dataTable tbody>tr.selected, table.dataTable tbody>tr>.selected,
+table.dataTable tbody>tr.selected a, table.dataTable tbody>tr>.selected a{
+    color: white !important;
+    background: linear-gradient(to right, #8971ea, #7f72ea, #7574ea, #6a75e9, #5f76e8) !important;
+}
+table.dataTable tbody tr.selected td.select-checkbox:before, table.dataTable tbody tr.selected th.select-checkbox:before {
+    border: 1px solid white !important;
+}
+table.dataTable td .form-group:last-child{
+	margin-bottom: 0rem !important;
+}
+
+/****************************************
+ *       Krajee File Input			    *
+ ****************************************/
+.krajee-default.file-preview-frame .kv-file-content.kv-pdf-rendered{
+	width: 213px !important;
+}

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.insilicogen.common.code.mapper.CodeMapper">
+
+	<resultMap type="groupCodeVO" id="groupCodeList">
+		<result property="groupCd" column="GROUP_CD" />
+		<result property="groupNm" column="GROUP_NM" />
+		<result property="groupNmEn" column="GROUP_NM_EN" />
+		<result property="groupAbr" column="GROUP_ABR" />
+		<result property="useAt" column="USE_AT" />
+		<result property="registDt" column="REGIST_DT" />
+		<result property="registId" column="REGIST_ID" />
+		<result property="updateDt" column="UPDATE_DT" />
+		<result property="updateId" column="UPDATE_ID" />
+
+		<collection property="codeList" column="GROUP_CD" ofType="codeVO" javaType="java.util.ArrayList" resultMap="codeList"></collection>
+	</resultMap>
+
+	<resultMap type="CodeVO" id="codeList">
+		<result property="groupCd" column="GROUP_CD"/>
+		<result property="code" column="CODE" />
+		<result property="oriCode" column="ORI_CODE" />
+		<result property="codeNm" column="CODE_NM" />
+		<result property="codeNmEn" column="CODE_NM_EN" />
+		<result property="colOrd" column="COL_ORD" />
+		<result property="useAt" column="USE_AT" />
+		<result property="codeDc" column="CODE_DC" />
+		<result property="codeIcon" column="CODE_ICON" />
+		<result property="registDt" column="REGIST_DT" />
+		<result property="registId" column="REGIST_ID" />
+		<result property="updateDt" column="UPDATE_DT" />
+		<result property="updateId" column="UPDATE_ID" />
+	</resultMap>
+
+	<select id="selectCodeList" resultType="egovMap">
+		SELECT  GROUP_CD,
+				GROUP_NM,
+				GROUP_NM_EN,
+				GROUP_ABR,
+				USE_AT,
+				TO_CHAR(REGIST_DT, 'YYYY-MM-DD') AS REGIST_DT,
+				REGIST_ID,
+				TO_CHAR(UPDATE_DT, 'YYYY-MM-DD') AS UPDATE_DT,
+				UPDATE_ID
+		FROM T_COM_GROUP_M
+		WHERE 1=1
+	</select>
+
+	<select id="selectCode" parameterType="groupCodeVO" resultMap="groupCodeList">
+		SELECT  A.GROUP_CD,
+				A.GROUP_NM,
+				A.GROUP_NM_EN,
+				A.GROUP_ABR,
+				A.USE_AT,
+				TO_CHAR(A.REGIST_DT, 'YYYY-MM-DD') AS REGIST_DT,
+				A.REGIST_ID,
+				TO_CHAR(A.UPDATE_DT, 'YYYY-MM-DD') AS UPDATE_DT,
+				A.UPDATE_ID,
+				B.GROUP_CD,
+				B.CODE,
+				B.CODE AS ORI_CODE,
+				B.CODE_NM,
+				B.CODE_NM_EN,
+				B.COL_ORD,
+				B.USE_AT,
+				B.CODE_DC,
+				B.CODE_ICON,
+				TO_CHAR(B.REGIST_DT, 'YYYY-MM-DD') AS REGIST_DT,
+				B.REGIST_ID,
+				TO_CHAR(B.UPDATE_DT, 'YYYY-MM-DD') AS UPDATE_DT,
+				B.UPDATE_ID
+		FROM T_COM_GROUP_M A LEFT OUTER JOIN T_COM_CODE_I B ON (A.GROUP_CD = B.GROUP_CD)
+		WHERE 1=1
+		AND A.GROUP_CD = #{groupCd}
+		ORDER BY A.GROUP_CD, B.COL_ORD
+	</select>
+
+	<update id="insertGroupCode" parameterType="groupCodeVO">
+		INSERT INTO T_COM_GROUP_M (
+			GROUP_CD, GROUP_NM, GROUP_NM_EN, GROUP_ABR, USE_AT, REGIST_DT, REGIST_ID, UPDATE_DT, UPDATE_ID
+		) VALUES (
+			#{groupCd}, #{groupNm}, #{groupNmEn}, #{groupAbr}, #{useAt}, NOW(), #{registId}, NOW(), #{registId}
+		);
+	</update>
+
+	<update id="insertCode" parameterType="codeVO">
+	    INSERT INTO T_COM_CODE_I
+	    (
+	    	GROUP_CD,
+			CODE,
+			CODE_NM,
+			CODE_NM_EN,
+			COL_ORD,
+			USE_AT,
+			CODE_DC,
+			CODE_ICON,
+			REGIST_DT,
+			REGIST_ID,
+			UPDATE_DT,
+			UPDATE_ID
+	    )
+	    VALUES
+	    (
+	    	#{groupCd},
+			#{code},
+			#{codeNm},
+			#{codeNmEn},
+			#{colOrd}::int,
+			#{useAt},
+			#{codeDc},
+			#{codeIcon},
+			NOW(),
+			#{registId},
+			NOW(),
+			#{registId}
+	    )
+	</update>
+
+	<update id="updateGroupCode" parameterType="groupCodeVO">
+		UPDATE T_COM_GROUP_M
+		SET GROUP_NM = #{groupNm},
+			GROUP_NM_EN = #{groupNmEn},
+			GROUP_ABR = #{groupAbr},
+			USE_AT = #{useAt},
+			UPDATE_DT = NOW(),
+			UPDATE_ID =#{updateId}
+		WHERE GROUP_CD = #{groupCd}
+	</update>
+
+	<update id="updateCode" parameterType="codeVO">
+		UPDATE T_COM_CODE_I
+		SET GROUP_CD = #{groupCd},
+			CODE = #{code},
+			CODE_NM = #{codeNm},
+			CODE_NM_EN = #{codeNmEn},
+			COL_ORD = #{colOrd}::int,
+			USE_AT = #{useAt},
+			CODE_DC = #{codeDc},
+			CODE_ICON = #{codeIcon},
+			UPDATE_DT = NOW(),
+			UPDATE_ID =#{updateId}
+		WHERE CODE = #{oriCode}
+		AND GROUP_CD = #{groupCd}
+	</update>
+
+	<delete id="deleteGroupCode" parameterType="groupCodeVO">
+		DELETE FROM T_COM_GROUP_M
+		WHERE GROUP_CD = #{groupCd}
+	</delete>
+
+	<delete id="deleteCode" parameterType="codeVO">
+		DELETE FROM T_COM_CODE_I
+		WHERE 1=1
+		<if test="code != null and code != ''">
+		AND CODE = #{code}
+		</if>
+		AND GROUP_CD = #{groupCd}
+	</delete>
+
+	<select id="selectCodeListByGroup" parameterType="codeVO" resultType="codeVO">
+		SELECT 	GROUP_CD,
+				CODE,
+				CODE_NM,
+				CODE_NM_EN,
+				COL_ORD,
+				USE_AT,
+				CODE_DC,
+				CODE_ICON,
+				TO_CHAR(REGIST_DT, 'YYYY-MM-DD') AS REGIST_DT,
+				REGIST_ID,
+				TO_CHAR(UPDATE_DT, 'YYYY-MM-DD') AS UPDATE_DT,
+				UPDATE_ID
+		FROM T_COM_CODE_I
+		WHERE GROUP_CD = #{groupCd}
+		<if test="useAt != null and useAt != ''">
+		AND USE_AT = #{useAt}
+		</if>
+	</select>
+
+
+
+</mapper>
